@@ -7,4 +7,26 @@
         values(#{paymentId}, #{transactionId}, #{paymentMethod}, #{paymentPrice});
     </insert>
 
+    <select id="selectPaymentAddress" parameterType="map" resultType="com.pikcurchu.pikcur.dto.response.ResPaymentAddressDto">
+        SELECT
+            (b.bid_price + g.shipping_price) AS payPrice,
+            a.name AS receiver,
+            a.phone,
+            a.address,
+            a.address_detail AS addressDetail
+        FROM
+            bid b
+        JOIN
+            goods g
+        ON g.goods_id = b.goods_id
+        LEFT JOIN
+            address a
+        ON  a.member_no = b.member_no
+        AND a.is_default = 'Y'
+        WHERE
+            b.bid_id = #{bidId}
+        AND b.member_no = #{memberNo}
+        AND b.status_no = '03';
+    </select>
+
 </mapper>

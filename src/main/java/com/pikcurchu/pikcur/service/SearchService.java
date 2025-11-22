@@ -16,17 +16,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SearchService {
     private final SearchMapper searchMapper;
-    private static final int PAGE_SIZE_21 = 21;
+    private static final int PAGE_SIZE_24 = 24;
 
     @Transactional
     public ResGoodsPageDto selectSearchGoodsList(String keyword, Integer memberNo, int currentPage) {
-        int offset = (currentPage - 1) * PAGE_SIZE_21;
+        int offset = (currentPage - 1) * PAGE_SIZE_24;
 
         // 2. 맵퍼에 파라미터 전달
         Map<String, Object> params = new HashMap<>();
         params.put("keyword", keyword);
         params.put("memberNo", memberNo);
-        params.put("limit", PAGE_SIZE_21);
+        params.put("limit", PAGE_SIZE_24);
         params.put("offset", offset);
 
         // 3. 쿼리 2개 호출
@@ -38,7 +38,7 @@ public class SearchService {
         int totalCount = searchMapper.countSearchGoods(keyword);
 
         // 4. 총 페이지 수 계산
-        int totalPages = (int) Math.ceil((double) totalCount / PAGE_SIZE_21);
+        int totalPages = (int) Math.ceil((double) totalCount / PAGE_SIZE_24);
 
         // 5. 결과를 DTO에 담아 반환 (React가 필요한 모든 정보)
         return new ResGoodsPageDto(goodsList, totalPages, totalCount);
@@ -50,5 +50,9 @@ public class SearchService {
 
     public List<ResSearchDto> selectSearchTop10() {
         return searchMapper.selectSearchTop10();
+    }
+
+    public Integer deleteSearchHistory(Integer memberNo, Integer searchHistoryId) {
+        return searchMapper.deleteSearchHistory(memberNo, searchHistoryId);
     }
 }

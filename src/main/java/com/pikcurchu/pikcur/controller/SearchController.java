@@ -42,4 +42,12 @@ public class SearchController {
         List<ResSearchDto> top10List = searchService.selectSearchTop10();
         return new ResponseEntity<>(top10List, HttpStatus.OK);
     }
+
+    @Operation(summary = "검색어 히스토리 삭제", description = "최근 검색어 삭제")
+    @DeleteMapping("/recent/{searchHistoryId}")
+    public ResponseEntity<Integer> deleteSearchHistory(HttpServletRequest request, @PathVariable Integer searchHistoryId) {
+        Integer memberNo = (Integer) request.getAttribute("memberNo");
+        Integer response = searchService.deleteSearchHistory(memberNo, searchHistoryId);
+        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+    }
 }

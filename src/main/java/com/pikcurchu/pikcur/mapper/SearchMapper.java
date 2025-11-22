@@ -20,4 +20,6 @@ public interface SearchMapper {
     void deleteOldSearchHistory(Integer memberNo);
 
     int countSearchGoods(String keyword);
+
+    Integer deleteSearchHistory(Integer memberNo, Integer searchHistoryId);
 }

@@ -44,7 +44,8 @@ public class JwtFilterConfig {
                 "/store/follow/*",
                 "/store/block/*",
                 "/store/report/*",
-                "/alarm"
+                "/alarm",
+                "/payment/info"
         );
         registration.setOrder(1);
         return registration;
@@ -59,7 +60,9 @@ public class JwtFilterConfig {
                 "/goods/categories/*",
                 "/brand/*",
                 "/brand/*/goods",
+                "/search",
                 "/search/recent",
+                "/search/recent/*",
                 "/search/goods",
                 "/store/goods/*");
         registration.setOrder(2);

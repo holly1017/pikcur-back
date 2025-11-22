@@ -1,11 +1,10 @@
 package com.pikcurchu.pikcur.controller;
 
 import com.pikcurchu.pikcur.dto.request.ReqVerifyPaymentDto;
+import com.pikcurchu.pikcur.dto.response.ResPaymentAddressDto;
 import com.pikcurchu.pikcur.dto.response.ResVerifyPaymentDto;
-import com.pikcurchu.pikcur.mapper.TransactionsMapper;
 import com.pikcurchu.pikcur.service.PaymentService;
 // ... (다른 import)
-import com.pikcurchu.pikcur.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,5 +40,15 @@ public class PaymentController {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDto);
         }
+    }
+
+    @Operation(summary = "결제 전 정보 주소정보 조회", description = "결제 전 정보 주소정보조회 API")
+    @GetMapping("/info")
+    public ResponseEntity<ResPaymentAddressDto> selectPaymentAddress(HttpServletRequest request, @RequestParam Integer bidId) {
+        Integer memberNo = (Integer) request.getAttribute("memberNo");
+
+        ResPaymentAddressDto response = paymentService.selectPaymentAddress(memberNo, bidId);
+
+        return new ResponseEntity<ResPaymentAddressDto>(response, HttpStatus.OK);
     }
 }

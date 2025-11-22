@@ -4,44 +4,65 @@
 <mapper namespace="com.pikcurchu.pikcur.mapper.SearchMapper">
     <select id="selectSearchGoodsList" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
         SELECT
-        g.goods_id,
-        g.category_id,
-        g.brand_id,
-        g.goods_name,
-        g.buyout_price,
-        g.start_price,
-        g.auction_end_date,
-        g.create_date,
-        COALESCE(b.bidCount, 0) AS bidCount,
-        CASE
-        WHEN #{memberNo} IS NULL THEN FALSE
-        WHEN glMember.goods_like_id IS NOT NULL THEN TRUE
-        ELSE FALSE
-        END AS isLiked,
-        sm.status_name
-        FROM goods g
-        join brand b ON g.brand_id = b.brand_id
+            g.goods_id
+        ,   g.category_id
+        ,   g.brand_id
+        ,   g.gender
+        ,   g.goods_name
+        ,   g.buyout_price
+        ,   g.start_price
+        ,   g.auction_end_date
+        ,   g.create_date
+        ,   COALESCE(b.bidCount, 0) AS bidCount
+        ,   CASE
+                WHEN #{memberNo} IS NULL THEN FALSE
+                WHEN glMember.goods_like_id IS NOT NULL THEN TRUE
+                ELSE FALSE
+            END AS isLiked
+        ,   sm.status_name
+        FROM
+            goods g
+        JOIN
+            brand b
+        ON  g.brand_id = b.brand_id
         LEFT JOIN (
-        SELECT goods_id, COUNT(*) AS bidCount
-        FROM bid
-        GROUP BY goods_id
-        ) b ON g.goods_id = b.goods_id
+            SELECT
+                goods_id
+            ,   COUNT(*) AS bidCount
+            FROM
+                bid
+            GROUP BY
+                goods_id
+            ) b
+        ON g.goods_id = b.goods_id
         LEFT JOIN (
-        SELECT goods_id, goods_like_id
-        FROM goods_like
-        WHERE member_no = #{memberNo}
-        ) glMember ON g.goods_id = glMember.goods_id
-        LEFT JOIN Status_master sm
-        ON g.status_type = sm.status_type
+            SELECT
+                goods_id
+            ,   goods_like_id
+            FROM
+                goods_like
+            WHERE
+                member_no = #{memberNo}
+        ) glMember
+        ON g.goods_id = glMember.goods_id
+        LEFT JOIN
+            Status_master sm
+        ON  g.status_type = sm.status_type
         AND g.status_no = sm.status_no
-        where g.goods_name LIKE CONCAT('%', #{keyword}, '%') OR b.brand_name LIKE CONCAT('%', #{keyword}, '%')
+        WHERE
+            g.goods_name LIKE CONCAT('%', #{keyword}, '%')
+        OR  b.brand_name LIKE CONCAT('%', #{keyword}, '%')
         ORDER BY g.goods_id DESC
         LIMIT #{limit} OFFSET #{offset};
     </select>
     <select id="selectSearchHistory" resultType="com.pikcurchu.pikcur.dto.response.ResSearchDto">
-        select keyword
-        from search_history
-        where member_no = #{memberNo}
+        select
+            keyword
+        ,   search_history_id as searchHistoryId
+        from
+            search_history
+        where
+            member_no = #{memberNo}
         order by create_date desc;
     </select>
     <select id="selectSearchTop10" resultType="com.pikcurchu.pikcur.dto.response.ResSearchDto">
@@ -76,4 +97,12 @@
         join brand b ON g.brand_id = b.brand_id
         where g.goods_name LIKE CONCAT('%', #{keyword}, '%') OR b.brand_name LIKE CONCAT('%', #{keyword}, '%')
     </select>
+
+    <delete id="deleteSearchHistory" parameterType="map">
+        DELETE FROM
+            search_history
+        WHERE
+            member_no = #{memberNo}
+        AND search_history_id = #{searchHistoryId}
+    </delete>
 </mapper>

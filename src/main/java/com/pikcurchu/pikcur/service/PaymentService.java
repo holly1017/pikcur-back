@@ -1,6 +1,7 @@
 package com.pikcurchu.pikcur.service;
 
 import com.pikcurchu.pikcur.dto.request.ReqVerifyPaymentDto;
+import com.pikcurchu.pikcur.dto.response.ResPaymentAddressDto;
 import com.pikcurchu.pikcur.mapper.GoodsMapper;
 import com.pikcurchu.pikcur.mapper.PaymentMapper;
 import com.pikcurchu.pikcur.mapper.TransactionsMapper;
@@ -69,5 +70,9 @@ public class PaymentService {
             e.printStackTrace(); // ⬅️⬅️⬅️ 이게 제일 중요합니다
             throw new RuntimeException("DB 작업 실패로 롤백합니다.", e);
         }
+    }
+
+    public ResPaymentAddressDto selectPaymentAddress(Integer memberNo, Integer bidId) {
+        return paymentMapper.selectPaymentAddress(memberNo, bidId);
     }
 }

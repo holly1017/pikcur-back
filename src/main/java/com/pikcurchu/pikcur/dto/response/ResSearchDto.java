@@ -7,4 +7,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResSearchDto {
     private String keyword;
+    private Integer searchHistoryId;
 }
