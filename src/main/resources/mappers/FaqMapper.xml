@@ -16,6 +16,6 @@
         SELECT
             COUNT(*)
         FROM
-            Faq
+            faq
     </select>
 </mapper>

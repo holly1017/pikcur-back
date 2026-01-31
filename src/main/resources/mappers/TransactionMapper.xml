@@ -30,26 +30,26 @@
           g.shipping_price
 
           FROM
-          Transactions t
+          transactions t
           left join
-          Status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
+          status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
           left join
-          Goods g ON t.goods_id = g.goods_id
+          goods g ON t.goods_id = g.goods_id
           left join
-          Image i on i.goods_id = g.goods_id  AND
+          image i on i.goods_id = g.goods_id  AND
           i.sort = 1
           left join
-          Member seller ON t.seller_no = seller.member_no
+          member seller ON t.seller_no = seller.member_no
           left join
-          Store st on st.member_no = seller.member_no
+          store st on st.member_no = seller.member_no
           left join
-          Address a ON t.buyer_no = a.member_no
+          address a ON t.buyer_no = a.member_no
           left join
-          Payment p ON t.transaction_id = p.transaction_id
+          payment p ON t.transaction_id = p.transaction_id
           left join
-          Bid b ON g.goods_id = b.goods_id and b.member_no = a.member_no
+          bid b ON g.goods_id = b.goods_id and b.member_no = a.member_no
           left join
-          Shipping s on s.transaction_id = t.transaction_id
+          shipping s on s.transaction_id = t.transaction_id
           WHERE
           t.transaction_id = #{transactionId}
       </select>
@@ -58,10 +58,10 @@
     </insert>
     <update id="updateTransactionStatus">
         <!--    상태 코드 수정 예정    -->
-        update Transactions set status_no = '06' where transaction_id = #{transactionId};
+        update transactions set status_no = '06' where transaction_id = #{transactionId};
     </update>
     <insert id="createTransaction">
-        INSERT INTO Transactions (buyer_no, seller_no, goods_id, price)
+        INSERT INTO transactions (buyer_no, seller_no, goods_id, price)
         VALUES (#{buyerNo}, #{sellerNo}, #{goodsId}, #{bidPrice});
     </insert>
     <insert id="insertTranaction" useGeneratedKeys="true" keyProperty="transactionId">

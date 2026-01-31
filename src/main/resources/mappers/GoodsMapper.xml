@@ -283,14 +283,14 @@
     <select id="findExpiredGoods" resultType="com.pikcurchu.pikcur.vo.Goods">
         <![CDATA[
         SELECT *
-        FROM Goods
+        FROM goods
         WHERE auction_end_date <= NOW()
         AND status_no = '01'
     ]]>
     </select>
 
     <update id="updateGoodsStatus">
-        UPDATE Goods
+        UPDATE goods
         SET status_no = #{statusNo}
         WHERE goods_id = #{goodsId}
     </update>

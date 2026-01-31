@@ -3,7 +3,7 @@
 
 <mapper namespace="com.pikcurchu.pikcur.mapper.ImageMapper">
     <insert id="insertGoodsImage">
-        insert into Image(goods_id, image_path, sort) values(#{goodsId}, #{imageUrl}, #{sort})
+        insert into image(goods_id, image_path, sort) values(#{goodsId}, #{imageUrl}, #{sort})
     </insert>
     <select id="findGoodsImages">
         select image_path

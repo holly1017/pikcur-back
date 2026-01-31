@@ -49,7 +49,7 @@
         ) glMember
         ON g.goods_id = glMember.goods_id
         LEFT JOIN
-            Status_master sm
+            status_master sm
         ON  g.status_type = sm.status_type
         AND g.status_no = sm.status_no
         WHERE
@@ -70,7 +70,7 @@
     </select>
     <select id="selectSearchTop10" resultType="com.pikcurchu.pikcur.dto.response.ResSearchDto">
         SELECT keyword
-        FROM Search_history
+        FROM search_history
         GROUP BY keyword
         ORDER BY COUNT(*) DESC
         LIMIT 10;
