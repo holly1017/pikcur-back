@@ -40,8 +40,8 @@
     <select id="findUnpaidWinners" resultType="com.pikcurchu.pikcur.vo.Bid">
         <![CDATA[
         SELECT b.*
-        FROM Bid b
-        JOIN Goods g ON b.goods_id = g.goods_id
+        FROM bid b
+        JOIN goods g ON b.goods_id = g.goods_id
         WHERE b.status_type = 'BID' AND b.status_no = '03'  -- 낙찰된 사람
         AND g.status_type = 'GDS' AND g.status_no = '02'  -- 결제 아직 안 된 상품
         AND b.update_date < DATE_SUB(NOW(), INTERVAL 3 DAY) -- 3일 지남
@@ -49,7 +49,7 @@
     </select>
     <select id="findNextBidder" resultType="com.pikcurchu.pikcur.vo.Bid">
         SELECT *
-        FROM Bid
+        FROM bid
         WHERE goods_id = #{goodsId}
         AND status_type = 'BID'
         AND status_no = '01'

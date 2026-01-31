@@ -22,6 +22,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -44,12 +45,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation platform('software.amazon.awssdk:bom:2.25.20')
+	implementation 'software.amazon.awssdk:s3'
 
-	allprojects {
-		repositories {
-			maven { url 'https://jitpack.io' }
-		}
-	}
+
+
 }
 
 tasks.named('test') {

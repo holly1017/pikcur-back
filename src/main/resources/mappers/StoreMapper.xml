@@ -163,11 +163,11 @@
         t.end_date,
         sm.status_name
         FROM
-        Transactions t
+        transactions t
         JOIN
-        Goods g ON t.goods_id = g.goods_id
+        goods g ON t.goods_id = g.goods_id
         join
-        Status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
+        status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
         WHERE
         t.seller_no = (SELECT member_no FROM store where store_id = #{storeId})
         ORDER BY
@@ -186,11 +186,11 @@
         t.end_date,
         sm.status_name
         FROM
-        Transactions t
+        transactions t
         JOIN
-        Goods g ON t.goods_id = g.goods_id
+        goods g ON t.goods_id = g.goods_id
         join
-        Status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
+        status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
         WHERE
         t.buyer_no = (SELECT member_no FROM store where store_id = #{storeId})
         ORDER BY
