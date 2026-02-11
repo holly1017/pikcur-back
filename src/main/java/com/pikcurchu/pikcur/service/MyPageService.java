@@ -7,6 +7,7 @@ import com.pikcurchu.pikcur.util.PasswordUtil;
 import com.pikcurchu.pikcur.vo.Member;
 import com.pikcurchu.pikcur.vo.Store;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -44,6 +45,7 @@ public class MyPageService {
         return myPageMapper.updatePassword(memberNo, encodedPassword);
     }
 
+    @Transactional
     public void updateStoreProfile(Integer storeId, MultipartFile image) {
         String uploadedPath = fileService.profileUploadFile(image);
         myPageMapper.updateStoreProfilePath(storeId, uploadedPath);
