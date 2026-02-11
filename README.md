@@ -67,6 +67,26 @@ Controller (REST API)
 
 ---
 
+## ☁️ 인프라 구조
+
+- Nginx EC2: React 정적 파일 서빙 + API Reverse Proxy
+- Spring Boot EC2: 비즈니스 로직 처리
+- RDS MariaDB: 영속 데이터 관리
+- Redis: TTL 기반 임시 상태 저장소 (이메일 인증 코드 관리 및 DB 부하 감소 목적)
+- S3 + CloudFront: 이미지 스토리지 및 CDN
+- Security Group 기반 내부망 통신 구조 설계 (역할별 접근 제어 및 외부 공격 표면 최소화)
+
+---
+
+## 🔒 보안 설계
+
+- Security Group 기반 최소 권한 네트워크 접근 제어
+- 애플리케이션 서버 직접 외부 노출 차단
+- DB 및 캐시 서버 외부 접근 완전 차단
+- SSH 접근 IP 제한
+
+---
+
 ## 🗄 데이터베이스 설계 (AWS RDS)
 
 * **MEMBER/ACCOUNT**: 사용자 보안 정보 및 자산 관리
