@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.ReviewMapper">
+    <insert id="insertReview" useGeneratedKeys="true" keyProperty="reviewId">
+        insert into review(member_no, store_id, rating, content)
+        values(#{memberNo}, #{storeId}, #{rating}, #{content});
+    </insert>
+    <insert id="insertReviewChoiceMap">
+        INSERT INTO review_choice_map(review_id, review_choice_id)
+        VALUES
+        <foreach collection="choiceIds" item="choiceId" separator=",">
+            (#{reviewId}, #{choiceId})
+        </foreach>
+    </insert>
+
+</mapper>

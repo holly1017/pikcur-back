@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.FaqMapper">
+    <select id="selectFaq" parameterType="map" resultType="com.pikcurchu.pikcur.vo.Faq">
+        SELECT
+            faq_id
+        ,   title
+        ,   content
+        FROM
+            faq
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countFaq" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            faq
+    </select>
+</mapper>

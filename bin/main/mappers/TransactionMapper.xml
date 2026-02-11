@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--  상태 값 조건 추가 해야함  -->
+<mapper namespace="com.pikcurchu.pikcur.mapper.TransactionsMapper">
+      <select id="findTransactionInfoById"
+              resultMap="transactionInfoResultMap" >
+          SELECT
+          t.transaction_id,
+          p.create_date,
+          sm.status_name,
+          g.goods_id,
+          g.goods_name,
+          i.image_path as goods_image,
+
+          st.store_id,
+          st.store_name,
+          seller.phone AS seller_phone,
+
+          a.name AS buyer_name,
+          a.phone AS buyer_phone,
+          s.tracking_number,
+          s.company,
+          a.address,
+          a.address_detail,
+
+          p.payment_price,
+          p.payment_method,
+          b.bid_price,
+          g.shipping_price
+
+          FROM
+          transactions t
+          left join
+          status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
+          left join
+          goods g ON t.goods_id = g.goods_id
+          left join
+          image i on i.goods_id = g.goods_id  AND
+          i.sort = 1
+          left join
+          member seller ON t.seller_no = seller.member_no
+          left join
+          store st on st.member_no = seller.member_no
+          left join
+          address a ON t.buyer_no = a.member_no
+          left join
+          payment p ON t.transaction_id = p.transaction_id
+          left join
+          bid b ON g.goods_id = b.goods_id and b.member_no = a.member_no
+          left join
+          shipping s on s.transaction_id = t.transaction_id
+          WHERE
+          t.transaction_id = #{transactionId}
+      </select>
+    <insert id="insertShippingInfo" parameterType="com.pikcurchu.pikcur.dto.request.ReqShippingDto">
+        insert into shipping(transaction_id, tracking_number, company) values (#{transactionId}, #{trackingNumber}, #{company})
+    </insert>
+    <update id="updateTransactionStatus">
+        <!--    상태 코드 수정 예정    -->
+        update transactions set status_no = '06' where transaction_id = #{transactionId};
+    </update>
+    <insert id="createTransaction">
+        INSERT INTO transactions (buyer_no, seller_no, goods_id, price)
+        VALUES (#{buyerNo}, #{sellerNo}, #{goodsId}, #{bidPrice});
+    </insert>
+    <insert id="insertTranaction" useGeneratedKeys="true" keyProperty="transactionId">
+        insert into transactions(buyer_no, seller_no, goods_id, price)
+        values(#{buyerNo}, #{sellerNo}, #{goodsId}, #{price});
+    </insert>
+
+    <resultMap id="transactionInfoResultMap" type="com.pikcurchu.pikcur.dto.response.ResTransactionDetailDto">
+
+        <id property="transactionId" column="transaction_id" />
+        <result property="createDate" column="create_date" />
+        <result property="statusName" column="status_name" />
+        <result property="goodsId" column="goods_id" />
+        <result property="goodsName" column="goods_name" />
+        <result property="goodsImage" column="goods_image" />
+
+        <association property="sellerInfo" javaType="com.pikcurchu.pikcur.dto.response.SellerInfo">
+            <result property="storeId" column="store_id"/>
+            <result property="storeName" column="store_name"/>
+            <result property="phone" column="seller_phone"/>
+        </association>
+
+        <association property="buyerInfo" javaType="com.pikcurchu.pikcur.dto.response.BuyerInfo">
+            <result property="name" column="buyer_name"/>
+            <result property="phone" column="buyer_phone"/>
+            <result property="trackingNumber" column="tracking_number"/>
+            <result property="company" column="company"/>
+            <result property="address" column="address"/>
+            <result property="addressDetail" column="address_detail"/>
+        </association>
+
+        <association property="paymentInfo" javaType="com.pikcurchu.pikcur.dto.response.PaymentInfo">
+            <result property="paymentPrice" column="payment_price"/>
+            <result property="paymentMethod" column="payment_method"/>
+            <result property="bidPrice" column="bid_price"/>
+            <result property="shippingPrice" column="shipping_price"/>
+        </association>
+
+    </resultMap>
+</mapper>

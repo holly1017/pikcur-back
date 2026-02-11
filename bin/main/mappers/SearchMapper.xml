@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.SearchMapper">
+    <select id="selectSearchGoodsList" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+            i.image_path
+        ,   g.goods_id
+        ,   g.category_id
+        ,   g.brand_id
+        ,   g.gender
+        ,   g.goods_name
+        ,   g.buyout_price
+        ,   g.start_price
+        ,   g.auction_end_date
+        ,   g.create_date
+        ,   COALESCE(b.bidCount, 0) AS bidCount
+        ,   CASE
+                WHEN #{memberNo} IS NULL THEN FALSE
+                WHEN glMember.goods_like_id IS NOT NULL THEN TRUE
+                ELSE FALSE
+            END AS isLiked
+        ,   sm.status_name
+        FROM
+            goods g
+        left join
+            image i on g.goods_id = i.goods_id AND i.sort = 1
+        JOIN
+            brand b
+        ON  g.brand_id = b.brand_id
+        LEFT JOIN (
+            SELECT
+                goods_id
+            ,   COUNT(*) AS bidCount
+            FROM
+                bid
+            GROUP BY
+                goods_id
+            ) b
+        ON g.goods_id = b.goods_id
+        LEFT JOIN (
+            SELECT
+                goods_id
+            ,   goods_like_id
+            FROM
+                goods_like
+            WHERE
+                member_no = #{memberNo}
+        ) glMember
+        ON g.goods_id = glMember.goods_id
+        LEFT JOIN
+            status_master sm
+        ON  g.status_type = sm.status_type
+        AND g.status_no = sm.status_no
+        WHERE
+            g.goods_name LIKE CONCAT('%', #{keyword}, '%')
+        OR  b.brand_name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY g.goods_id DESC
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="selectSearchHistory" resultType="com.pikcurchu.pikcur.dto.response.ResSearchDto">
+        select
+            keyword
+        ,   search_history_id as searchHistoryId
+        from
+            search_history
+        where
+            member_no = #{memberNo}
+        order by create_date desc;
+    </select>
+    <select id="selectSearchTop10" resultType="com.pikcurchu.pikcur.dto.response.ResSearchDto">
+        SELECT keyword
+        FROM search_history
+        GROUP BY keyword
+        ORDER BY COUNT(*) DESC
+        LIMIT 10;
+    </select>
+    <insert id="insertSearchHistory">
+        INSERT INTO search_history (member_no, keyword)
+        VALUES (#{memberNo}, #{keyword})
+        ON DUPLICATE KEY UPDATE
+        create_date = NOW()
+    </insert>
+    <delete id="deleteOldSearchHistory">
+        DELETE FROM search_history
+        WHERE member_no = #{memberNo}
+        AND create_date NOT IN (
+            SELECT create_date
+            FROM (
+                SELECT create_date
+                FROM search_history
+                WHERE member_no = #{memberNo}
+                ORDER BY create_date DESC LIMIT 20
+            ) AS recent_histories
+        )
+    </delete>
+    <select id="countSearchGoods">
+        select COUNT(*)
+        from goods g
+        join brand b ON g.brand_id = b.brand_id
+        where g.goods_name LIKE CONCAT('%', #{keyword}, '%') OR b.brand_name LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <delete id="deleteSearchHistory" parameterType="map">
+        DELETE FROM
+            search_history
+        WHERE
+            member_no = #{memberNo}
+        AND search_history_id = #{searchHistoryId}
+    </delete>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.BrandMapper">
+    <select id="selectBrandDetail" resultType="com.pikcurchu.pikcur.dto.response.ResBrandDetailDto">
+        select
+        b.brand_id,
+        b.brand_name,
+        b.brand_profile,
+        b.brand_info,
+        case
+        when bl.brand_like_id is not null then true
+        else false
+        end as isLiked
+        from brand b
+        left join brand_like bl ON bl.brand_id = b.brand_id and bl.member_no = #{memberNo}
+        where b.brand_id = #{brandId};
+    </select>
+    <select id="selectBrandGoodsCount" resultType="int">
+        select count(*) from goods
+        where brand_id = #{brandId}
+    </select>
+    <select id="selectBrandGoodsList" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+        g.goods_id,
+        g.category_id,
+        g.brand_id,
+        g.goods_name,
+        g.buyout_price,
+        g.start_price,
+        g.auction_end_date,
+        g.create_date,
+        COUNT(b.goods_id) as bidCount,
+        CASE
+        WHEN #{memberNo} IS NULL THEN FALSE
+        WHEN gl.goods_like_id IS NOT NULL THEN TRUE
+        ELSE FALSE
+        END AS isLiked,
+        sm.status_name
+        from goods g
+        left join
+        bid b on g.goods_id = b.goods_id
+        left join
+        goods_like gl on gl.goods_id = g.goods_id
+        and gl.member_no = #{memberNo}
+        left join
+        status_master sm ON g.status_no = sm.status_no AND g.status_type = sm.status_type
+        where g.brand_id = #{brandId}
+        GROUP BY
+        g.goods_id,
+        g.category_id,
+        g.brand_id,
+        g.goods_name,
+        g.buyout_price,
+        g.start_price,
+        g.auction_end_date,
+        g.create_date,
+        sm.status_name
+        order by g.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <insert id="insertBrandLike">
+        insert into brand_like(brand_id, member_no) values(#{brandId}, #{memberNo});
+    </insert>
+    <delete id="deleteBrandLike">
+        delete from brand_like where brand_id = #{brandId} and member_no = #{memberNo};
+    </delete>
+    <select id="countBrandGoodsByBrandId">
+        select count(*)
+        from goods g
+        where g.brand_id = #{brandId};
+    </select>
+    <select id="selectBrandList" resultType="com.pikcurchu.pikcur.dto.response.ResBrandListDto">
+        select
+        brand_id,
+        brand_name
+        from brand;
+    </select>
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.BidMapper">
+    <select id="selectBidList" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsBidItemDto">
+        select
+        b.bid_id,
+        m.id AS memberId,
+        b.bid_price,
+        b.create_date
+        from bid b
+        join member m ON m.member_no = b.member_no
+        where b.goods_id = #{goodsId}
+        order by b.bid_price desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <insert id="insertBid" useGeneratedKeys="true" keyProperty="bidId">
+        insert into bid(member_no, goods_id, bid_price)
+        values(#{memberNo}, #{goodsId}, #{bidPrice});
+    </insert>
+    <update id="updateBidStatus">
+        update bid
+        set
+            status_no = #{statusNo},
+            update_date = NOW()
+        where bid_id = #{bidId} AND goods_id = #{goodsId}
+    </update>
+    <select id="findTopBidder" resultType="com.pikcurchu.pikcur.vo.Bid">
+        SELECT *
+        FROM bid
+        WHERE goods_id = #{goodsId}
+        ORDER BY bid_price DESC
+        LIMIT 1
+    </select>
+    <select id="countGoodsBidsByGoodsId">
+        select count(*)
+        from bid b
+        where b.goods_id = #{goodsId}
+    </select>
+    <select id="findUnpaidWinners" resultType="com.pikcurchu.pikcur.vo.Bid">
+        <![CDATA[
+        SELECT b.*
+        FROM bid b
+        JOIN goods g ON b.goods_id = g.goods_id
+        WHERE b.status_type = 'BID' AND b.status_no = '03'  -- 낙찰된 사람
+        AND g.status_type = 'GDS' AND g.status_no = '02'  -- 결제 아직 안 된 상품
+        AND b.update_date < DATE_SUB(NOW(), INTERVAL 3 DAY) -- 3일 지남
+        ]]>
+    </select>
+    <select id="findNextBidder" resultType="com.pikcurchu.pikcur.vo.Bid">
+        SELECT *
+        FROM bid
+        WHERE goods_id = #{goodsId}
+        AND status_type = 'BID'
+        AND status_no = '01'
+        ORDER BY bid_price DESC
+        LIMIT 1
+    </select>
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.AccountMapper">
+
+    <insert id="insertAccount">
+        INSERT INTO account (
+            member_no
+        ,   bank
+        ,   account_number
+        ,   name
+        ,   is_default
+        )
+        VALUES (
+            #{memberNo}
+        ,   #{req.bank}
+        ,   #{req.accountNumber}
+        ,   #{req.name}
+        ,   #{isDefault}
+        )
+    </insert>
+
+    <select id="selectAccountIsDefault" resultType="int">
+        SELECT
+            count(*)
+        FROM
+            account
+        WHERE
+            member_no = #{memberNo}
+        AND use_yn = 'Y'
+    </select>
+
+    <select id="selectAccountList" resultType="com.pikcurchu.pikcur.vo.Account">
+        SELECT
+            account_id
+        ,   bank
+        ,   account_number
+        ,   name
+        ,   is_default
+        FROM
+            account
+        WHERE
+            member_no = #{memberNo}
+        and use_yn = 'Y'
+    </select>
+
+    <update id="updateAccount">
+        UPDATE
+            account
+        SET
+            bank = #{req.bank}
+        ,   account_number = #{req.accountNumber}
+        ,   name = #{req.name}
+        WHERE
+            member_no = #{memberNo}
+            and account_id = #{req.accountId}
+    </update>
+
+    <update id="deleteAccount">
+        UPDATE
+            account
+        SET
+            use_yn = 'N'
+        ,   is_default = 'N'
+        WHERE
+            member_no = #{memberNo}
+        AND account_id = #{accountId}
+    </update>
+
+    <update id="updateDefaultAccountAfterDelete">
+        UPDATE
+            account
+        SET
+            is_default = 'Y'
+        WHERE
+            account_id = (
+                SELECT
+                    account_id
+                FROM
+                    account
+                WHERE
+                    member_no = #{memberNo}
+                AND use_yn = 'Y'
+                ORDER BY account_id ASC
+                LIMIT 1
+            )
+    </update>
+
+    <update id="updateDefaultAccountN">
+        UPDATE
+            account
+        SET
+            is_default = 'N'
+        WHERE
+            member_no = #{memberNo}
+        and is_default = 'Y'
+    </update>
+
+    <update id="updateDefaultAccountY">
+        UPDATE
+            account
+        SET
+            is_default = 'Y'
+        WHERE
+            member_no = #{memberNo}
+        and account_id = #{accountId}
+    </update>
+
+</mapper>
