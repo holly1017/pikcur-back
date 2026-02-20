@@ -4,8 +4,7 @@
 단순한 이커머스를 넘어, 실시간 입찰 시스템과 안전한 결제 인프라, 효율적인 알림 시스템을 갖춘 프로젝트입니다.
 (프론트엔드 리포지토리: [PIKCUR-Front](https://github.com/holly1017/pikcur-front))
 
-AWS 클라우드 네이티브 환경(RDS, S3, Redis, CloudFront)을 활용하여 확장성과 안정성을 확보하였으며,
-**AOP(Aspect Oriented Programming)**를 통한 관심사 분리와 **WebSocket**을 이용한 실시간 사용자 경험을 구현한 프로젝트입니다.
+AWS 클라우드 네이티브 환경(RDS, S3, Redis, CloudFront)을 활용하여 확장성과 안정성을 확보하였으며, **WebSocket**을 이용한 실시간 사용자 경험을 구현한 프로젝트입니다.
 
 ---
 
