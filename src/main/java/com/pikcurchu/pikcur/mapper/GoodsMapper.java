@@ -27,21 +27,21 @@ public interface GoodsMapper {
 
     List<ResGoodsQuestionsDto> selectGoodsQuestionsById(Map<String, Object> params);
 
-    void insertGoodsReport(Integer goodsId, Integer memberNo);
+    int insertGoodsReport(Integer goodsId, Integer memberNo);
 
-    void insertGoodsLike(Integer goodsId, Integer memberNo);
+    int insertGoodsLike(Integer goodsId, Integer memberNo);
 
-    void deleteGoodsLike(Integer goodsId, Integer memberNo);
+    int deleteGoodsLike(Integer goodsId, Integer memberNo);
 
     void insertGoodsHistory(Integer goodsId, Integer memberNo);
 
     void updateGoodsView(Integer goodsId);
 
-    void insertGoods(ReqGoodsDto reqGoodsDto);
+    int insertGoods(ReqGoodsDto reqGoodsDto);
 
     List<Goods> findExpiredGoods();
 
-    void updateGoodsStatus(String statusNo, Integer goodsId);
+    int updateGoodsStatus(String statusNo, Integer goodsId);
 
     Integer selectMemberNoOfStore(Integer storeId);
 

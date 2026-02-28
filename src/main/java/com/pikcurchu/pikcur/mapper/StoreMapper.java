@@ -35,9 +35,9 @@ public interface StoreMapper {
 
     List<ResQuestionItemDto> selectSentQuestions(Map<String, Object> params);
 
-    void insertStoreReport(Integer storeId, Integer memberNo);
+    int insertStoreReport(Integer storeId, Integer memberNo);
 
-    void insertStoreBlock(Integer storeId, Integer memberNo);
+    int insertStoreBlock(Integer storeId, Integer memberNo);
 
     int countReceivedQuestionsByStoreId(Integer storeId);
 
@@ -59,9 +59,9 @@ public interface StoreMapper {
 
     int countGoodsLikeGoodsByStoreId(Integer storeId);
 
-    Integer insertFollow(Integer storeId, Integer memberNo);
+    int insertFollow(Integer storeId, Integer memberNo);
 
-    Integer deleteFollow(Integer storeId, Integer memberNo);
+    int deleteFollow(Integer storeId, Integer memberNo);
 
     ResStoreDetailDto findMyStoreInfoById(Integer memberNo);
 

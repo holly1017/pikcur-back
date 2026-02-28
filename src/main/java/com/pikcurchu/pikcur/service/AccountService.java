@@ -1,8 +1,9 @@
 package com.pikcurchu.pikcur.service;
 
+import com.pikcurchu.pikcur.common.ResponseCode;
 import com.pikcurchu.pikcur.dto.request.ReqAccountDto;
+import com.pikcurchu.pikcur.exception.BusinessException;
 import com.pikcurchu.pikcur.mapper.AccountMapper;
-import com.pikcurchu.pikcur.mapper.AddressMapper;
 import com.pikcurchu.pikcur.vo.Account;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +18,16 @@ public class AccountService {
         this.accountMapper = accountMapper;
     }
 
+    @Transactional
     public Integer insertAccount(ReqAccountDto req, Integer memberNo) {
-        int response = selectAccountIsDefault(memberNo);
+        int isDefaultCount = selectAccountIsDefault(memberNo);
+        String isDefault = (isDefaultCount > 0) ? "N" : "Y";
 
-        if(response > 0) {
-            return accountMapper.insertAccount(req, memberNo, "N");
-        } else {
-            return accountMapper.insertAccount(req, memberNo, "Y");
-        }
+        int result = accountMapper.insertAccount(req, memberNo, isDefault);
+        if (result == 0)
+            throw new BusinessException(ResponseCode.INVALID_REQUEST);
+
+        return result;
     }
 
     public Integer selectAccountIsDefault(Integer memberNo) {
@@ -35,29 +38,31 @@ public class AccountService {
         return accountMapper.selectAccountList(memberNo);
     }
 
+    @Transactional
     public Integer updateAccount(ReqAccountDto req, Integer memberNo) {
-        return accountMapper.updateAccount(req, memberNo);
+        int result = accountMapper.updateAccount(req, memberNo);
+        if (result == 0)
+            throw new BusinessException(ResponseCode.NOT_FOUND);
+        return result;
     }
 
+    @Transactional
     public Integer deleteAccount(Integer accountId, Integer memberNo) {
-        int response = 0;
+        int result = accountMapper.deleteAccount(accountId, memberNo);
+        if (result == 0)
+            throw new BusinessException(ResponseCode.NOT_FOUND);
 
-        response += accountMapper.deleteAccount(accountId, memberNo);
-
-        response += accountMapper.updateDefaultAccountAfterDelete(accountId, memberNo);
-
-        return response;
+        accountMapper.updateDefaultAccountAfterDelete(accountId, memberNo);
+        return result;
     }
 
     @Transactional
     public Integer updateDefaultAccount(int accountId, int memberNo) {
-        int response = 0;
+        accountMapper.updateDefaultAccountN(memberNo);
+        int result = accountMapper.updateDefaultAccountY(accountId, memberNo);
 
-        response += accountMapper.updateDefaultAccountN(memberNo);
-
-        response += accountMapper.updateDefaultAccountY(accountId, memberNo);
-
-        return response;
+        if (result == 0)
+            throw new BusinessException(ResponseCode.NOT_FOUND);
+        return result;
     }
-
 }

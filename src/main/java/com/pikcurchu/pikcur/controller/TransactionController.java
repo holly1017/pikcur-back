@@ -8,14 +8,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
-@Tag(name="transaction api", description = "거래 관련 api")
+@Tag(name = "transaction api", description = "거래 관련 api")
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
@@ -25,13 +23,14 @@ public class TransactionController {
 
     @Operation(summary = "거래 상세내역 조회", description = "거래 아이디를 통한 거래 상세내역 조회")
     @GetMapping("/{transactionId}")
-    public ResponseEntity<ResTransactionDetailDto> selectTransactionInfo(@PathVariable Integer transactionId) {
-        ResTransactionDetailDto transaction = transactionService.selectTransactionInfo(transactionId);
-        return new ResponseEntity<>(transaction, HttpStatus.OK);
+    public ResTransactionDetailDto selectTransactionInfo(@PathVariable Integer transactionId) {
+        return transactionService.selectTransactionInfo(transactionId);
     }
+
     @Operation(summary = "거래 배송조회", description = "거래 아이디를 통한 상품 배송현황 조회")
     @GetMapping("/{transactionId}/shipping")
-    public void selectShippingStatus(@RequestParam String code, @RequestParam String invoice, HttpServletResponse response) throws IOException {
+    public void selectShippingStatus(@RequestParam String code, @RequestParam String invoice,
+            HttpServletResponse response) throws IOException {
         String url = "https://info.sweettracker.co.kr/tracking/5"
                 + "?t_key=" + sweetTrackerKey
                 + "&t_code=" + code
@@ -39,16 +38,16 @@ public class TransactionController {
 
         response.sendRedirect(url);
     }
+
     @Operation(summary = "거래 운송장 등록", description = "거래 아이디를 통한 상품 운송장 번호 등록")
     @PostMapping("/{transactionId}/shipping")
-    public ResponseEntity<Void> insertShippingInfo(@PathVariable Integer transactionId, @RequestBody ReqShippingDto reqShippingDto) {
+    public void insertShippingInfo(@PathVariable Integer transactionId, @RequestBody ReqShippingDto reqShippingDto) {
         transactionService.insertShippingInfo(transactionId, reqShippingDto);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
+
     @Operation(summary = "거래 구매확정 (상태 변경)", description = "거래 아이디를 통한 거래 구매확정 상태 변경")
     @PutMapping("/{transactionId}/confirm")
-    public ResponseEntity<Void> confirmPurchase(@PathVariable Integer transactionId) {
+    public void confirmPurchase(@PathVariable Integer transactionId) {
         transactionService.confirmPurchase(transactionId);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface ReviewMapper {
-    void insertReview(ReqReviewDto reqReviewDto);
+    int insertReview(ReqReviewDto reqReviewDto);
 
-    void insertReviewChoiceMap(Integer reviewId, List<Integer> choiceIds);
+    int insertReviewChoiceMap(Integer reviewId, List<Integer> choiceIds);
 }

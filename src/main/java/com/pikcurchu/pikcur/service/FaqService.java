@@ -33,4 +33,3 @@ public class FaqService {
         return new ResFaqPageDto(faqList, totalPages, totalCount);
     }
 }
-

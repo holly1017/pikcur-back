@@ -7,13 +7,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface QuestionMapper {
-    void insertQuestion(ReqQuestionDto questionDto);
+    int insertQuestion(ReqQuestionDto questionDto);
 
-    void insertAnswer(ReqAnswerDto answerDto);
+    int insertAnswer(ReqAnswerDto answerDto);
 
     ResQuestionDetailDto findQuestionDetailById(Integer questionId);
 
-    void updateQuestionImagePath(Integer questionId, String uploadedPath);
+    int updateQuestionImagePath(Integer questionId, String uploadedPath);
 
-    void updateAnswerImagePath(Integer answerId, String uploadedPath);
+    int updateAnswerImagePath(Integer answerId, String uploadedPath);
 }

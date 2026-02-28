@@ -8,5 +8,5 @@ public interface AlarmMapper {
 
     List<ResAlarmDto> selectAlarmList(Integer memberNo);
 
-    void insertAlarm(Integer memberNo, String alarmTitle, String alarmContent, String imagePath);
+    int insertAlarm(Integer memberNo, String alarmTitle, String alarmContent, String imagePath);
 }

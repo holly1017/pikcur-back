@@ -1,7 +1,9 @@
 package com.pikcurchu.pikcur.service;
 
+import com.pikcurchu.pikcur.common.ResponseCode;
 import com.pikcurchu.pikcur.dto.request.ReqVerifyPaymentDto;
 import com.pikcurchu.pikcur.dto.response.ResPaymentAddressDto;
+import com.pikcurchu.pikcur.exception.BusinessException;
 import com.pikcurchu.pikcur.mapper.GoodsMapper;
 import com.pikcurchu.pikcur.mapper.PaymentMapper;
 import com.pikcurchu.pikcur.mapper.TransactionsMapper;
@@ -10,6 +12,7 @@ import com.pikcurchu.pikcur.vo.Transactions;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.response.IamportResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,26 +27,23 @@ public class PaymentService {
     private final IamportClient iamportClient;
 
     @Transactional
-    public boolean verifyPayment(ReqVerifyPaymentDto dto, Integer memberNo) {
+    public void verifyPayment(ReqVerifyPaymentDto dto, Integer memberNo) {
         try {
-            // 아임포트 API에 '진짜' 결제 정보 요청 (서버 to 서버)
-            IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(dto.getImpUid());
-
-            // 아임포트에서 가져온 '실제 결제 금액'
+            IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient
+                    .paymentByImpUid(dto.getImpUid());
             BigDecimal paidAmountFromIamport = iamportResponse.getResponse().getAmount();
+            BigDecimal paidAmountFromDto = dto.getAmount();
 
-            // 프론트에서 보낸 '결제 요청 금액'
-            BigDecimal paidAmountFromDto = dto.getAmount(); // 또는 long/int
-
-            // 금액 위/변조 검증
             if (paidAmountFromIamport.compareTo(paidAmountFromDto) != 0) {
-                return false;
+                throw new BusinessException(ResponseCode.INCONSISTENCY);
             }
 
-            // TODO: integer로 결과 확인 하도록 수정
-            goodsMapper.updateGoodsStatus("03", dto.getGoodsId());
+            int goodsUpdateResult = goodsMapper.updateGoodsStatus("03", dto.getGoodsId());
+            if (goodsUpdateResult == 0)
+                throw new BusinessException(ResponseCode.NOT_FOUND);
+
             Integer sellerNo = goodsMapper.selectGoodsMemberNo(dto.getGoodsId());
-            // 3. 거래 내역(TransactionHistory) 추가
+
             Transactions transactions = Transactions.builder()
                     .buyerNo(memberNo)
                     .sellerNo(sellerNo)
@@ -53,22 +53,19 @@ public class PaymentService {
 
             transactionMapper.insertTranaction(transactions);
 
-            // 2. 결제 정보(Payment) 저장
             Payment payment = Payment.builder()
                     .paymentId(dto.getImpUid())
                     .transactionId(transactions.getTransactionId())
                     .paymentMethod("inicis")
-                    .paymentPrice(paidAmountFromIamport.intValue()) // DTO 금액이 아닌, 아임포트가 보증한 금액을 저장
+                    .paymentPrice(paidAmountFromIamport.intValue())
                     .build();
 
             paymentMapper.insertPayment(payment);
 
-            return true;
-
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
-            // TODO: (중요) 이 경우, 이미 결제된 10원은 '강제 환불' API를 호출해야 합니다.
-            e.printStackTrace(); // ⬅️⬅️⬅️ 이게 제일 중요합니다
-            throw new RuntimeException("DB 작업 실패로 롤백합니다.", e);
+            throw new BusinessException(ResponseCode.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
