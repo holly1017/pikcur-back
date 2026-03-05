@@ -57,7 +57,7 @@ Controller (REST API)
 | 구분           | 사용 기술                                      |
 | ------------ | ------------------------------------------ |
 | Language     | Java 17                                    |
-| Backend      | Spring Boot 3.5.6, Spring Security         |
+| Backend      | Spring Boot 3.5.6                          |
 | Persistence  | MyBatis, MariaDB (AWS RDS)                 |
 | Cache/Session | Redis (AWS ElastiCache with TLS)           |
 | Real-time    | WebSocket, STOMP                           |
