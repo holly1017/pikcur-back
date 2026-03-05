@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.AuthMapper">
+
+    <select id="authById" resultType="com.pikcurchu.pikcur.vo.Member">
+        select
+        member_no as memberNo,
+        id,
+        name,
+        authority,
+        password
+        from
+        member
+        where
+        id = #{id}
+    </select>
+
+    <select id="findStatusNo" resultType="String">
+        select
+            status_no
+        from
+            member
+        where id = #{id}
+    </select>
+
+    <insert id="insertMember" parameterType="com.pikcurchu.pikcur.vo.Member" useGeneratedKeys="true" keyProperty="memberNo">
+        INSERT INTO member (
+        id,
+        password,
+        name,
+        email,
+        phone,
+        birth,
+        gender,
+        authority,
+        status_type,
+        status_no,
+        login_date,
+        create_date,
+        update_date,
+        bank,
+        block_list
+        )
+        VALUES (
+        #{id},
+        #{password},
+        #{name},
+        #{email},
+        #{phone},
+        #{birth},
+        #{gender},
+        'MEM',
+        'MEM',
+        '01',
+        null,
+        NOW(),
+        null,
+        null,
+        null
+        )
+    </insert>
+
+    <select id="findIdByEmail" parameterType="string" resultType="String">
+        SELECT id FROM member WHERE email = #{email}
+    </select>
+
+    <update id="updateMemberToWithdrawal" parameterType="int">
+        UPDATE member
+        SET status_no = '02',
+        update_date = NOW()
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <select id="countById" parameterType="String" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            member
+        WHERE
+            id = #{id}
+        and (
+                status_no = '01'
+            or  status_no = '03'
+            or  status_no = '04'
+        )
+    </select>
+
+    <update id="updatePasswordStatusLogin" parameterType="map">
+        UPDATE member
+        SET
+            password = #{password}
+        ,   update_date = NOW()
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <update id="updatePasswordStatusUnLogin" parameterType="map">
+        UPDATE member
+        SET
+        password = #{password}
+        ,   update_date = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertStore" parameterType="map">
+        INSERT INTO store (
+            member_no
+        ,   profile
+        ,   store_name
+        ,   store_info
+        )
+        VALUES (
+            #{memberNo}
+        ,   null
+        ,   #{storeName}
+        ,   CONCAT(#{storeName}, '입니다.')
+        )
+    </insert>
+</mapper>

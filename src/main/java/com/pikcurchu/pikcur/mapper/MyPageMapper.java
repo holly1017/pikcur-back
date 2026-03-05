@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 public interface MyPageMapper {
 
-    MyPageInfoDto selectMyInfoById (Integer memberNo);
+    MyPageInfoDto selectMyInfoById(Integer memberNo);
 
     int updateMyInfo(Member member);
 
@@ -19,5 +19,5 @@ public interface MyPageMapper {
 
     int updatePassword(Integer memberNo, String password);
 
-    void updateStoreProfilePath(Integer storeId, String uploadedPath);
+    int updateStoreProfilePath(Integer storeId, String uploadedPath);
 }

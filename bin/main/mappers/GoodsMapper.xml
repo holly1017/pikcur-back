@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.GoodsMapper">
+    <select id="findPopularGoodsList" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+            i.image_path,
+            g.goods_id,
+            g.category_id,
+            g.brand_id,
+            g.goods_name,
+            g.buyout_price,
+            g.start_price,
+            g.auction_end_date,
+            g.create_date,
+            COUNT(b.goods_id) as bidCount,
+            case
+            WHEN #{memberNo} IS NULL THEN FALSE
+            when gl.goods_like_id is not null then true
+            ELSE FALSE
+            END AS isLiked,
+            g.gender,
+            g.status_no
+        FROM goods g
+        left join
+            image i on g.goods_id = i.goods_id AND i.sort = 1
+        left join
+            bid b on g.goods_id = b.goods_id
+        left join
+            goods_like gl on gl.goods_id = g.goods_id
+            and gl.member_no = #{memberNo}
+        GROUP BY
+            g.goods_id
+        ORDER BY
+            bidCount DESC,
+            g.create_date DESC
+        limit 8;
+    </select>
+    <select id="findRecentViewGoodsList" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+            i.image_path,
+            g.goods_id,
+            g.category_id,
+            g.brand_id,
+            g.goods_name,
+            g.buyout_price,
+            g.start_price,
+            g.auction_end_date,
+            g.create_date,
+            COUNT(b.goods_id) as bidCount,
+            CASE
+            WHEN #{memberNo} IS NULL THEN FALSE
+            when gl.goods_like_id is not null then true
+            ELSE FALSE
+            END AS isLiked,
+            g.gender,
+            g.status_no
+        FROM goods g
+        left join
+            image i on g.goods_id = i.goods_id AND i.sort = 1
+        left join
+            bid b on g.goods_id = b.goods_id
+        left join
+            goods_like gl on gl.goods_id = g.goods_id
+            and gl.member_no =#{memberNo}
+        INNER JOIN (
+            SELECT goods_id, goods_history_id, MAX(create_date) AS last_view
+            FROM goods_history
+            WHERE member_no =#{memberNo}
+            GROUP BY goods_id
+        ) gh ON g.goods_id = gh.goods_id
+        group by g.goods_id
+        ORDER BY gh.goods_history_id DESC
+        limit 8;
+
+
+    </select>
+    <select id="findGoodsByAuctionEndAsc" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+            i.image_path,
+            g.goods_id,
+            g.category_id,
+            g.brand_id,
+            g.goods_name,
+            g.buyout_price,
+            g.start_price,
+            g.auction_end_date,
+            g.create_date,
+            COUNT(b.goods_id) as bidCount,
+            case
+            WHEN #{memberNo} IS NULL THEN FALSE
+            when gl.goods_like_id is not null then true
+            ELSE FALSE
+            END AS isLiked,
+            g.gender,
+            g.status_no
+        FROM goods g
+        left join
+            image i on g.goods_id = i.goods_id AND i.sort = 1
+        left join
+            bid b on g.goods_id = b.goods_id
+        left join
+            goods_like gl on gl.goods_id = g.goods_id
+            and gl.member_no = #{memberNo}
+        group by g.goods_id
+        order by
+            g.auction_end_date asc,
+            g.create_date desc
+        limit 8;
+    </select>
+    <select id="findCategories" resultMap="categoryResultMap">
+        SELECT
+            p.category_id AS parent_id,
+            p.category_name AS parent_name,
+            c.category_id AS child_id,
+            c.category_name AS child_name
+        FROM
+            category p
+        LEFT JOIN
+            category c
+        ON
+            p.category_id = c.parents_id
+        WHERE
+            p.parents_id IS NULL
+        ORDER BY
+            p.category_id;
+    </select>
+    <select id="findGoodsListByCategoryId" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+        i.image_path,
+        g.goods_id,
+        g.category_id,
+        g.brand_id,
+        g.goods_name,
+        g.buyout_price,
+        g.start_price,
+        g.auction_end_date,
+        g.create_date,
+        MAX(b.bid_price) as bidPrice,
+        COUNT(b.goods_id) as bidCount,
+        case
+        WHEN #{memberNo} IS NULL THEN FALSE
+        when gl.goods_like_id is not null then true
+        else false
+        end as isLiked,
+        g.gender,
+        g.status_no
+        from goods g
+        left join
+        image i on g.goods_id = i.goods_id AND i.sort = 1
+        left join
+        bid b on g.goods_id = b.goods_id
+        left join
+        goods_like gl on gl.goods_id = g.goods_id
+        and gl.member_no = #{memberNo}
+        where g.category_id = #{categoryId}
+        GROUP BY
+        g.goods_id
+        order by g.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findGoodsDetailById" resultMap="GoodsDetailResultMap">
+        <![CDATA[
+    WITH RECURSIVE category_path AS (
+        SELECT c.category_id, c.category_name, c.parents_id, 1 AS lvl
+        FROM category c
+        WHERE c.parents_id IS NULL
+        UNION ALL
+        SELECT c.category_id, c.category_name, c.parents_id, cp.lvl + 1
+        FROM category c
+        JOIN category_path cp ON c.parents_id = cp.category_id
+    )
+    SELECT
+    g.goods_id,
+    g.goods_name,
+    b.brand_name,
+    b.brand_id,
+    MAX(bi.bid_price) AS current_bid_price,
+    g.buyout_price,
+    g.start_price,
+    g.shipping_price,
+    g.quality,
+    g.auction_end_date,
+    g.size,
+    sm.status_name,
+    g.goods_info,
+
+    -- 카테고리 경로
+    (SELECT GROUP_CONCAT(cp.category_name ORDER BY cp.lvl ASC)
+     FROM category_path cp
+     JOIN category c ON c.category_id = g.category_id
+     WHERE cp.category_id = c.category_id
+        OR cp.category_id IN (
+            SELECT parents_id
+            FROM category_path
+            WHERE category_id = g.goods_id
+        )
+    ) AS category_path,
+
+    -- 좋아요 여부: memberNo가 null이면 0
+    CASE WHEN #{memberNo} IS NULL THEN 0
+         ELSE (SELECT COUNT(*)
+               FROM goods_like l
+               WHERE l.goods_id = g.goods_id
+                 AND l.member_no = #{memberNo})
+        END AS is_liked,
+
+        -- 상점 정보
+        s.store_id,
+        s.store_name,
+        s.profile,
+        (SELECT AVG(r.rating) FROM review r WHERE r.store_id = s.store_id) AS average_rating,
+        (SELECT COUNT(*) FROM review r WHERE r.store_id = s.store_id) AS review_count
+    FROM goods g
+    JOIN store s ON s.store_id = g.store_id
+    JOIN brand b ON b.brand_id = g.brand_id
+    LEFT JOIN bid bi ON bi.goods_id = g.goods_id
+    JOIN status_master sm ON sm.status_type = g.status_type AND sm.status_no = g.status_no
+    WHERE g.goods_id = #{goodsId}
+    GROUP BY g.goods_id;
+    ]]>
+    </select>
+    <select id="selectGoodsQuestionsById" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsQuestionsDto">
+        SELECT
+        q.question_id,
+        q.title,
+        q.is_public,
+        q.create_date,
+        case
+        when a.question_id is not null then true
+        else false
+        end as isAnswer
+        FROM question q
+        left join answer a on a.question_id = q.question_id
+        WHERE q.goods_id = #{goodsId}
+        ORDER BY q.create_date DESC
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <insert id="insertGoodsReport">
+        insert into goods_report(goods_id, member_no) values(#{goodsId}, #{memberNo})
+    </insert>
+    <insert id="insertGoodsLike">
+        insert into goods_like(goods_id, member_no) values(#{goodsId}, #{memberNo})
+    </insert>
+    <delete id="deleteGoodsLike">
+        delete from goods_like where goods_id = #{goodsId} and member_no = #{memberNo}
+    </delete>
+    <insert id="insertGoodsHistory">
+        insert into goods_history(goods_id, member_no) values(#{goodsId}, #{memberNo})
+    </insert>
+    <update id="updateGoodsView">
+        update goods set views = views + 1 where goods_id = #{goodsId}
+    </update>
+    <insert id="insertGoods" useGeneratedKeys="true" keyProperty="goodsId">
+        insert into goods(
+        store_id,
+        category_id,
+        brand_id,
+        goods_name,
+        goods_info,
+        buyout_price,
+        start_price,
+        shipping_price,
+        auction_end_date,
+        quality,
+        size,
+        gender
+        ) values (
+        (SELECT store_id FROM store WHERE member_no = #{memberNo}),
+        #{categoryId},
+        #{brandId},
+        #{goodsName},
+        #{goodsInfo},
+        #{buyoutPrice},
+        #{startPrice},
+        #{shippingPrice},
+        #{auctionEndDate},
+        #{quality},
+        #{size},
+        #{gender}
+        );
+    </insert>
+    <select id="findExpiredGoods" resultType="com.pikcurchu.pikcur.vo.Goods">
+        <![CDATA[
+        SELECT *
+        FROM goods
+        WHERE auction_end_date <= NOW()
+        AND status_no = '01'
+    ]]>
+    </select>
+
+    <update id="updateGoodsStatus">
+        UPDATE goods
+        SET status_no = #{statusNo}
+        WHERE goods_id = #{goodsId}
+    </update>
+
+    <select id="findMemberNoOfStore" resultType="java.lang.Integer">
+        SELECT member_no
+        FROM store where store_id = #{storeId}
+    </select>
+    <select id="selectGoodsMemberNo" parameterType="int" resultType="int">
+        SELECT m.member_no
+        FROM goods g
+        JOIN store s ON g.store_id = s.store_id
+        JOIN member m ON s.member_no = m.member_no
+        WHERE g.goods_id = #{goodsId}
+    </select>
+    <select id="countCategoryGoodsById">
+        select count(*)
+        from goods g
+        where g.category_id = #{categoryId};
+    </select>
+    <select id="countSellTransactionByStoreId">
+        select count(*)
+        from question
+        where goods_id = #{goodsId}
+    </select>
+    <resultMap id="categoryResultMap" type="com.pikcurchu.pikcur.dto.response.ResCategoryDto">
+
+        <id property="categoryId" column="parent_id"/>
+        <result property="categoryName" column="parent_name"/>
+
+        <collection property="subCategories" ofType="com.pikcurchu.pikcur.dto.response.SubCategoryDto">
+            <id property="categoryId" column="child_id"/>
+            <result property="categoryName" column="child_name"/>
+        </collection>
+    </resultMap>
+    <resultMap id="GoodsDetailResultMap" type="com.pikcurchu.pikcur.dto.response.ResGoodsDetailDto">
+
+        <!-- 상품 기본 정보 -->
+        <id property="goodsId" column="goods_id"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="brandName" column="brand_name"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="currentBidPrice" column="current_bid_price"/>
+        <result property="buyoutPrice" column="buyout_price"/>
+        <result property="startPrice" column="start_price"/>
+        <result property="shippingPrice" column="shipping_price"/>
+        <result property="quality" column="quality"/>
+        <result property="auctionEndDate" column="auction_end_date"/>
+        <result property="size" column="size"/>
+        <result property="statusName" column="status_name"/>
+        <result property="goodsInfo" column="goods_info"/>
+        <result property="isLiked" column="is_liked"/>
+
+        <!-- 카테고리 경로 (comma separated -> List<String>) -->
+        <result property="categoryPath" column="category_path"/>
+
+        <!-- 상점 정보 -->
+        <association property="storeInfo" javaType="com.pikcurchu.pikcur.dto.response.StoreInfo">
+            <result property="storeId" column="store_id"/>
+            <result property="storeName" column="store_name"/>
+            <result property="imagePath" column="profile"/>
+            <result property="averageRating" column="average_rating"/>
+            <result property="reviewCount" column="review_count"/>
+        </association>
+
+    </resultMap>
+
+</mapper>

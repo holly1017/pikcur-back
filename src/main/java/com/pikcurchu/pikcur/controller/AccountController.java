@@ -6,69 +6,50 @@ import com.pikcurchu.pikcur.vo.Account;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name="account api", description = "계좌 API")
+@Tag(name = "account api", description = "계좌 API")
 @RestController
 @RequestMapping("/mypage")
+@RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
 
-    public AccountController(AccountService accountService) {
-        this.accountService = accountService;
-    }
-
     @Operation(summary = "계좌 추가", description = "계좌 추가 API")
     @PostMapping("/account")
-    public ResponseEntity<Integer> insertAccount(@RequestBody ReqAccountDto req, HttpServletRequest request) {
+    public void insertAccount(@RequestBody ReqAccountDto req, HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-
-        Integer response = accountService.insertAccount(req, memberNo);
-
-        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+        accountService.insertAccount(req, memberNo);
     }
 
     @Operation(summary = "계좌 조회", description = "계좌 조회 API")
     @GetMapping("/account")
-    public ResponseEntity<List<Account>> selectAccountList(HttpServletRequest request) {
+    public List<Account> selectAccountList(HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-
-        List<Account> response = accountService.selectAccountList(memberNo);
-
-        return new ResponseEntity<List<Account>>(response, HttpStatus.OK);
+        return accountService.selectAccountList(memberNo);
     }
 
     @Operation(summary = "계좌 수정", description = "계좌 수정 API")
     @PutMapping("/account")
-    public ResponseEntity<Integer> updateAccount(@RequestBody ReqAccountDto req, HttpServletRequest request) {
+    public void updateAccount(@RequestBody ReqAccountDto req, HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-
-        Integer response = accountService.updateAccount(req, memberNo);
-
-        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+        accountService.updateAccount(req, memberNo);
     }
 
     @Operation(summary = "계좌 삭제", description = "계좌 삭제 API")
     @DeleteMapping("/account/{accountId}")
-    public ResponseEntity<Integer> deleteAccount(@PathVariable Integer accountId, HttpServletRequest request) {
+    public void deleteAccount(@PathVariable Integer accountId, HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-
-        Integer response = accountService.deleteAccount(accountId, memberNo);
-
-        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+        accountService.deleteAccount(accountId, memberNo);
     }
 
     @Operation(summary = "주 계좌 변경", description = "주 계좌 변경 API")
     @PutMapping("/account/{accountId}/set-default")
-    public ResponseEntity<Integer> updateDefaultAccount(@PathVariable Integer accountId, HttpServletRequest request) {
+    public void updateDefaultAccount(@PathVariable Integer accountId, HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-
-        Integer response = accountService.updateDefaultAccount(accountId, memberNo);
-
-        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+        accountService.updateDefaultAccount(accountId, memberNo);
     }
 }

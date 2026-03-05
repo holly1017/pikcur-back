@@ -1,97 +1,65 @@
 package com.pikcurchu.pikcur.controller;
 
-import com.pikcurchu.pikcur.common.ApiResponse;
+import com.pikcurchu.pikcur.dto.request.ReqSigninDto;
+import com.pikcurchu.pikcur.dto.request.ReqSignupDto;
 import com.pikcurchu.pikcur.dto.response.ResSigninDto;
-import com.pikcurchu.pikcur.util.JwtUtil;
 import com.pikcurchu.pikcur.service.AuthService;
 import com.pikcurchu.pikcur.vo.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name="auth api", description = "인증 관련 API")
+@Tag(name = "auth api", description = "인증 관련 API")
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
-
     @Operation(summary = "로그인", description = "JWT 토큰 방식 로그인")
     @PostMapping("/members/signin")
-    public ResponseEntity<ResSigninDto> signin(@RequestBody Member member) {
-        Member memberDetail = authService.authenticate(member.getId(), member.getPassword());
-        if(memberDetail != null) {
-            String token = JwtUtil.generateToken(memberDetail.getMemberNo());
-            ResSigninDto response = new ResSigninDto(
-                    token,
-                    memberDetail.getId(),
-                    memberDetail.getName(),
-                    memberDetail.getAuthority()
-            );
-            return new ResponseEntity<ResSigninDto>(response, HttpStatus.OK);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResSigninDto signin(@Valid @RequestBody ReqSigninDto request) {
+        return authService.signin(request);
     }
 
     @Operation(summary = "회원가입", description = "회원가입 API")
     @PostMapping("/members/signup")
-    public ResponseEntity<Integer> signup(@RequestBody Member member) { // TODO: 유지보수를 위한 DTO 변경
-        int response = authService.insertMember(member);
-
-        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+    public Integer signup(@Valid @RequestBody ReqSignupDto request) {
+        return authService.signup(request);
     }
 
     @Operation(summary = "아이디 조회", description = "아이디 조회 API")
     @PostMapping("/members/find-id")
-    public ResponseEntity<ApiResponse<String>> findIdByEmail(@RequestBody Member member) {
-        ApiResponse<String> response = authService.findIdByEmail(member.getEmail());
-
-        return ResponseEntity.status(response.getHttpStatus()).body(response);
+    public String findIdByEmail(@RequestBody Member member) {
+        return authService.findIdByEmail(member.getEmail());
     }
 
     @Operation(summary = "계정 삭제", description = "계정 삭제 API")
     @PutMapping("/members/delete-account")
-    public ResponseEntity<Boolean> updateMemberToWithdrawal(HttpServletRequest request) {
+    public Boolean updateMemberToWithdrawal(HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-        Boolean response = authService.updateMemberToWithdrawal(memberNo);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return authService.updateMemberToWithdrawal(memberNo);
     }
 
     @Operation(summary = "아이디 중복", description = "아이지 중복 체크 API")
     @PostMapping("/members/duplicate-id")
-    public ResponseEntity<Integer> selectId(@RequestBody Member member) {
-        int response = authService.countById(member.getId());
-
-        return new ResponseEntity<Integer>(response, HttpStatus.OK);
+    public Integer selectId(@RequestBody Member member) {
+        return authService.countById(member.getId());
     }
 
     @Operation(summary = "로그인 상태에서 비밀번호 변경", description = "로그인 상태에서 비밀번호 변경 API")
     @PostMapping("/members/password-status-login")
-    public ResponseEntity<Integer> updatePasswordStatusLogin(@RequestBody Member member, HttpServletRequest request) {
+    public Integer updatePasswordStatusLogin(@RequestBody Member member, HttpServletRequest request) {
         Integer memberNo = (Integer) request.getAttribute("memberNo");
-        int response = authService.updatePasswordStatusLogin(memberNo, member.getPassword());
-        if (response > 0) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+        return authService.updatePasswordStatusLogin(memberNo, member.getPassword());
     }
 
     @Operation(summary = "비로그인 상태에서 비밀번호 변경", description = "비로그인 상태에서 비밀번호 변경 API")
     @PostMapping("/members/password-status-unLogin")
-    public ResponseEntity<Integer> updatePasswordStatusUnLogin(@RequestBody Member member) {
-        int response = authService.updatePasswordStatusUnLogin(member.getId(), member.getPassword());
-        if (response > 0) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+    public Integer updatePasswordStatusUnLogin(@RequestBody Member member) {
+        return authService.updatePasswordStatusUnLogin(member.getId(), member.getPassword());
     }
 }

@@ -9,11 +9,11 @@ import org.apache.ibatis.annotations.Mapper;
 public interface TransactionsMapper {
     ResTransactionDetailDto findTransactionInfoById(Integer transactionId);
 
-    void insertShippingInfo(ReqShippingDto reqShippingDto);
+    int insertShippingInfo(ReqShippingDto reqShippingDto);
 
-    void updateTransactionStatus(Integer transactionId);
+    int updateTransactionStatus(Integer transactionId);
 
-    void createTransaction(Integer buyerNo, Integer sellerNo, Integer goodsId, Integer bidPrice);
+    int createTransaction(Integer buyerNo, Integer sellerNo, Integer goodsId, Integer bidPrice);
 
-    void insertTranaction(Transactions transactions);
+    int insertTranaction(Transactions transactions);
 }

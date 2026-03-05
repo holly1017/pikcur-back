@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.AlarmMapper">
+
+    <select id="selectAlarmList" resultType="com.pikcurchu.pikcur.dto.response.ResAlarmDto">
+        SELECT
+            *
+        FROM
+            alarm
+        WHERE
+            member_no = #{memberNo}
+        and status_no = '01'
+    </select>
+
+    <insert id="insertAlarm" parameterType="map">
+        INSERT INTO
+            alarm
+        (
+            member_no
+        ,   alarm_title
+        ,   alarm_content
+        ,   image_path
+        )
+        VALUES
+        (
+            #{memberNo}
+        ,   #{alarmTitle}
+        ,   #{alarmContent}
+        ,   null
+        )
+    </insert>
+</mapper>

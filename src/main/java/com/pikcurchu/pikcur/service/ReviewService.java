@@ -1,6 +1,8 @@
 package com.pikcurchu.pikcur.service;
 
+import com.pikcurchu.pikcur.common.ResponseCode;
 import com.pikcurchu.pikcur.dto.request.ReqReviewDto;
+import com.pikcurchu.pikcur.exception.BusinessException;
 import com.pikcurchu.pikcur.mapper.ReviewMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,11 +17,17 @@ public class ReviewService {
     public void insertReview(Integer storeId, ReqReviewDto reqReviewDto, Integer memberNo) {
         reqReviewDto.setStoreId(storeId);
         reqReviewDto.setMemberNo(memberNo);
-        reviewMapper.insertReview(reqReviewDto);
+        int result = reviewMapper.insertReview(reqReviewDto);
+        if (result == 0) {
+            throw new BusinessException(ResponseCode.INVALID_REQUEST);
+        }
         Integer reviewId = reqReviewDto.getReviewId();
 
         if (reqReviewDto.getChoiceIds() != null && !reqReviewDto.getChoiceIds().isEmpty()) {
-            reviewMapper.insertReviewChoiceMap(reviewId, reqReviewDto.getChoiceIds());
+            int detailResult = reviewMapper.insertReviewChoiceMap(reviewId, reqReviewDto.getChoiceIds());
+            if (detailResult == 0) {
+                throw new BusinessException(ResponseCode.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 }

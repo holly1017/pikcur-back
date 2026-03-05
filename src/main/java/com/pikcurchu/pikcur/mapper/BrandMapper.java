@@ -14,9 +14,9 @@ public interface BrandMapper {
 
     List<ResGoodsItemDto> selectBrandGoodsList(Map<String, Object> params);
 
-    void insertBrandLike(Integer brandId, Integer memberNo);
+    int insertBrandLike(Integer brandId, Integer memberNo);
 
-    void deleteBrandLike(Integer brandId, Integer memberNo);
+    int deleteBrandLike(Integer brandId, Integer memberNo);
 
     int countBrandGoodsByBrandId(Integer brandId);
 

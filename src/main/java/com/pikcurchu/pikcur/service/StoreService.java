@@ -1,32 +1,32 @@
 package com.pikcurchu.pikcur.service;
 
-import com.pikcurchu.pikcur.dto.request.ReqStoreBlockDto;
-import com.pikcurchu.pikcur.dto.request.ReqStoreReportDto;
+import com.pikcurchu.pikcur.common.ResponseCode;
 import com.pikcurchu.pikcur.dto.response.*;
+import com.pikcurchu.pikcur.exception.BusinessException;
 import com.pikcurchu.pikcur.mapper.StoreMapper;
-import com.pikcurchu.pikcur.vo.GoodsLike;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class StoreService {
 
     // TODO: 공통 로직 분리하기
     private final StoreMapper storeMapper;
-    private static final int PAGE_SIZE_6  = 6;
-    private static final int PAGE_SIZE_21  = 21;
-
-    public StoreService(StoreMapper storeMapper) {
-        this.storeMapper = storeMapper;
-    }
+    private static final int PAGE_SIZE_6 = 6;
+    private static final int PAGE_SIZE_21 = 21;
 
     public ResStoreDetailDto selectStoreInfo(Integer storeId, Integer memberNo) {
         ResStoreDetailDto storeDto = storeMapper.findStoreInfoById(storeId, memberNo);
 
-        if (storeDto == null) {throw new IllegalArgumentException("Invalid store ID: " + storeId); }
+        if (storeDto == null) {
+            throw new IllegalArgumentException("Invalid store ID: " + storeId);
+        }
 
         return storeDto;
     }
@@ -255,26 +255,44 @@ public class StoreService {
         return new ResQuestionPageDto(qnaList, totalPages, totalCount);
     }
 
+    @Transactional
     public void reportStore(Integer storeId, Integer memberNo) {
-        storeMapper.insertStoreReport(storeId, memberNo);
+        int result = storeMapper.insertStoreReport(storeId, memberNo);
+        if (result == 0) {
+            throw new BusinessException(ResponseCode.INVALID_REQUEST);
+        }
     }
 
+    @Transactional
     public void blockStore(Integer storeId, Integer memberNo) {
-        storeMapper.insertStoreBlock(storeId, memberNo);
+        int result = storeMapper.insertStoreBlock(storeId, memberNo);
+        if (result == 0) {
+            throw new BusinessException(ResponseCode.INVALID_REQUEST);
+        }
     }
 
-    public Integer insertFollow(Integer storeId, Integer memberNo) {
-        return storeMapper.insertFollow(storeId, memberNo);
+    @Transactional
+    public void insertFollow(Integer storeId, Integer memberNo) {
+        int result = storeMapper.insertFollow(storeId, memberNo);
+        if (result == 0) {
+            throw new BusinessException(ResponseCode.INVALID_REQUEST);
+        }
     }
 
-    public Integer deleteFollow(Integer storeId, Integer memberNo) {
-        return storeMapper.deleteFollow(storeId, memberNo);
+    @Transactional
+    public void deleteFollow(Integer storeId, Integer memberNo) {
+        int result = storeMapper.deleteFollow(storeId, memberNo);
+        if (result == 0) {
+            throw new BusinessException(ResponseCode.NOT_FOUND);
+        }
     }
 
     public ResStoreDetailDto selectMyStoreInfo(Integer memberNo) {
         ResStoreDetailDto storeDto = storeMapper.findMyStoreInfoById(memberNo);
 
-        if (storeDto == null) {throw new IllegalArgumentException("Invalid member no: " + memberNo); }
+        if (storeDto == null) {
+            throw new IllegalArgumentException("Invalid member no: " + memberNo);
+        }
 
         return storeDto;
     }

@@ -12,9 +12,9 @@ import java.util.Map;
 public interface BidMapper {
     List<ResGoodsBidItemDto> selectBidList(Map<String, Object> params);
 
-    void insertBid(ReqBidDto reqBidDto);
+    int insertBid(ReqBidDto reqBidDto);
 
-    void updateBidStatus(String statusNo, Integer goodsId, Integer bidId);
+    int updateBidStatus(String statusNo, Integer goodsId, Integer bidId);
 
     Bid findTopBidder(Integer goodsId);
 

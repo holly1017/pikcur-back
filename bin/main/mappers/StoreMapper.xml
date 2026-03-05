@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--  상태 값 조건 추가 해야함  -->
+<!--  현재 상점아이디 기준으로 조회, 로그인되어있을 시 회원번호 조회로 수정가능성 있음  -->
+<mapper namespace="com.pikcurchu.pikcur.mapper.StoreMapper">
+    <select id="findStoreInfoById" resultType="com.pikcurchu.pikcur.dto.response.ResStoreDetailDto">
+        SELECT
+        s.store_id,
+        s.profile,
+        s.store_name,
+        s.store_info,
+        IFNULL(AVG(r.rating), 0.0) AS rating,
+        COUNT(DISTINCT r.review_id) AS reviewCount,
+        COUNT(DISTINCT f_all.follow_id) AS followerCount,
+
+        CASE
+        WHEN f_user.follow_id IS NOT NULL THEN true
+        ELSE false
+        END AS isFollow
+
+        FROM
+        store s
+
+        LEFT JOIN
+        review r ON s.store_id = r.store_id
+
+        LEFT JOIN
+        follow f_all ON s.store_id = f_all.store_id
+
+        LEFT JOIN
+        follow f_user ON s.store_id = f_user.store_id
+        AND f_user.member_no = #{currentMemberNo}
+
+        WHERE
+        s.store_id = #{storeId}
+
+        GROUP BY
+        s.store_id
+    </select>
+    <select id="findMyStoreInfoById" resultType="com.pikcurchu.pikcur.dto.response.ResStoreDetailDto">
+        SELECT
+        s.store_id,
+        s.profile,
+        s.store_name,
+        s.store_info,
+        IFNULL(AVG(r.rating), 0.0) AS rating,
+        COUNT(DISTINCT r.review_id) AS reviewCount,
+        COUNT(DISTINCT f_all.follow_id) AS followerCount,
+        CASE
+        WHEN f_user.follow_id IS NOT NULL THEN true
+        ELSE false
+        END AS isFollow
+
+        FROM
+        store s
+
+        LEFT JOIN
+        review r ON s.store_id = r.store_id
+
+        LEFT JOIN
+        follow f_all ON s.store_id = f_all.store_id
+
+        LEFT JOIN
+        follow f_user ON s.store_id = f_user.store_id
+        AND f_user.member_no = #{currentMemberNo}
+
+        WHERE
+        s.member_no = #{memberNo}
+
+        GROUP BY
+        s.store_id
+    </select>
+    <select id="findStoreReviewById" resultType="com.pikcurchu.pikcur.dto.response.ResReviewItemDto">
+        SELECT
+        s.profile AS src,
+        s.store_name,
+        r.rating,
+        r.content,
+        r.create_date,
+        rcm.choice_content as reviewChoices
+        FROM
+        review r
+        JOIN
+        member m ON r.member_no = m.member_no
+        JOIN
+        store s ON s.member_no = m.member_no
+        LEFT JOIN (
+        SELECT
+        rm.review_id,
+        GROUP_CONCAT(rc.content SEPARATOR ',') AS choice_content
+        FROM
+        review_choice_map rm
+        JOIN
+        review_choice rc ON rc.review_choice_id = rm.review_choice_id
+        GROUP BY
+        rm.review_id
+        ) rcm
+        ON r.review_id = rcm.review_id
+        WHERE r.store_id = #{storeId}
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findStoreReviewRatingAverage" resultType="com.pikcurchu.pikcur.dto.response.ResStoreAverageDto">
+        SELECT
+        s.store_id,
+        s.store_name,
+        IFNULL(AVG(r.rating), 0.0) AS averRating
+
+        FROM
+        store s
+
+        LEFT JOIN
+        review r ON s.store_id = r.store_id
+
+        WHERE
+        s.store_id = #{storeId}
+
+        GROUP BY
+        s.store_id;
+    </select>
+    <select id="findStoreGoodsById" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+        i.image_path,
+        g.goods_id,
+        g.category_id,
+        g.brand_id,
+        g.goods_name,
+        g.buyout_price,
+        g.start_price,
+        g.auction_end_date,
+        g.create_date,
+        MAX(b.bid_price) as bidPrice,
+        COUNT(b.goods_id) as bidCount,
+        case
+        when gl.goods_like_id is not null then true
+        else false
+        end as isLiked,
+        g.gender,
+        g.status_no
+        from goods g
+        left join
+        image i on g.goods_id = i.goods_id AND i.sort = 1
+        left join
+        bid b on g.goods_id = b.goods_id
+        left join
+        goods_like gl on gl.goods_id = g.goods_id
+        and gl.member_no = #{memberNo}
+        where g.store_id = #{storeId}
+        GROUP BY
+        g.goods_id
+        order by g.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findStoreSellTranactionById" resultType="com.pikcurchu.pikcur.dto.response.ResTransactionItemDto">
+        SELECT
+        t.transaction_id,
+        t.goods_id,
+        g.goods_name,
+        t.buyer_no,
+        t.seller_no,
+        t.price,
+        t.start_date,
+        t.end_date,
+        sm.status_name
+        FROM
+        transactions t
+        JOIN
+        goods g ON t.goods_id = g.goods_id
+        join
+        status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
+        WHERE
+        t.seller_no = (SELECT member_no FROM store where store_id = #{storeId})
+        ORDER BY
+        t.start_date DESC
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findStoreBuyTranactionById" resultType="com.pikcurchu.pikcur.dto.response.ResTransactionItemDto">
+        SELECT
+        t.transaction_id,
+        t.goods_id,
+        g.goods_name,
+        t.buyer_no,
+        t.seller_no,
+        t.price,
+        t.start_date,
+        t.end_date,
+        sm.status_name
+        FROM
+        transactions t
+        JOIN
+        goods g ON t.goods_id = g.goods_id
+        join
+        status_master sm ON t.status_no = sm.status_no AND t.status_type = sm.status_type
+        WHERE
+        t.buyer_no = (SELECT member_no FROM store where store_id = #{storeId})
+        ORDER BY
+        t.start_date DESC
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findBidById" resultType="com.pikcurchu.pikcur.dto.response.ResBidItemDto">
+        select
+        g.goods_id,
+        b.bid_id,
+        g.goods_name,
+        b.bid_price,
+        sm.status_name,
+        b.create_date
+        from bid b
+        join
+        goods g ON g.goods_id = b.goods_id
+        join
+        status_master sm ON sm.status_type = b.status_type
+        AND sm.status_no = b.status_no
+        join
+        store s ON s.member_no = b.member_no
+        where
+        b.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        order by b.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findWinBidById" resultType="com.pikcurchu.pikcur.dto.response.ResBidItemDto">
+        select
+        g.goods_id,
+        b.bid_id,
+        g.goods_name,
+        b.bid_price,
+        sm.status_name,
+        b.create_date
+        from bid b
+        join
+        goods g ON g.goods_id = b.goods_id
+        join
+        status_master sm ON sm.status_type = b.status_type
+        AND sm.status_no = b.status_no
+        join
+        store s ON s.member_no = b.member_no
+        where
+        b.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        and
+        b.status_no = '03'
+        order by b.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findGoodsLikeById" resultType="com.pikcurchu.pikcur.dto.response.ResGoodsItemDto">
+        SELECT
+        i.image_path,
+        g.goods_id,
+        g.category_id,
+        g.brand_id,
+        g.goods_name,
+        g.buyout_price,
+        g.start_price,
+        g.auction_end_date,
+        g.create_date,
+        COUNT(b.goods_id) as bidCount,
+        case
+        when gl.goods_like_id is not null then true
+        else false
+        end as isLiked,
+        g.gender,
+        g.status_no
+        from goods_like gl
+        join
+        goods g on g.goods_id = gl.goods_id and gl.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        left join
+        image i on g.goods_id = i.goods_id AND i.sort = 1
+        left join
+        bid b on g.goods_id = b.goods_id
+        GROUP BY
+        g.goods_id
+        order by gl.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findBrandLikeById" resultType="com.pikcurchu.pikcur.dto.response.ResBrandItemDto">
+        select
+        b.brand_id,
+        b.brand_name,
+        b.brand_profile,
+        case
+        when bl.brand_like_id is not null then true
+        else false
+        end as isLiked
+        from brand b
+        join
+        brand_like bl ON bl.brand_id = b.brand_id
+        where bl.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        order by bl.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="findFollowById" resultType="com.pikcurchu.pikcur.dto.response.ResFollowItemDto">
+        select
+        s.store_id,
+        s.profile,
+        s.store_name,
+        case
+        when f.follow_id is not null then true
+        else false
+        end as isFollow
+        from store s
+        join follow f ON f.store_id = s.store_id
+        where f.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        order by f.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="selectReceivedQuestions" resultType="com.pikcurchu.pikcur.dto.response.ResQuestionItemDto" parameterType="map">
+        select
+        q.member_no,
+        g.store_id,
+        q.question_id,
+        q.title,
+        q.create_date,
+        case
+        when a.question_id is not null then true
+        else false
+        end as isAnswer
+        from question q
+        join goods g on g.goods_id = q.goods_id
+        join store s on s.store_id = g.store_id
+        left join answer a on a.question_id = q.question_id
+        where s.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        order by q.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="selectSentQuestions" resultType="com.pikcurchu.pikcur.dto.response.ResQuestionItemDto" parameterType="map">
+        select
+        q.member_no,
+        g.store_id,
+        q.question_id,
+        q.title,
+        q.create_date,
+        case
+        when a.question_id is not null then true
+        else false
+        end as isAnswer
+        from question q
+        join goods g on g.goods_id = q.goods_id
+        left join answer a on a.question_id = q.question_id
+        where q.member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        order by q.create_date desc
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+    <select id="countReceivedQuestionsByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(q.question_id)
+        from question q
+        join goods g on g.goods_id = q.goods_id
+        join store s on s.store_id = g.store_id
+        where s.member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countSentQuestionsByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(q.question_id)
+        from question q
+        join goods g on g.goods_id = q.goods_id
+        join store s on s.store_id = g.store_id
+        where q.member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countReviewsByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from review
+        where store_id = #{storeId};
+    </select>
+    <select id="countSellTransactionByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from transactions t
+        where t.seller_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countBuyTransactionByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from transactions t
+        where t.buyer_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countBidsByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from bid
+        where member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countBrandLikeByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from brand_like bl
+        where bl.member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countFollowByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from follow f
+        where f.member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countStoreGoodsByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(g.goods_id)
+        from goods g
+        join store s ON g.store_id = s.store_id
+        where s.member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countGoodsLikeGoodsByStoreId"
+            resultType="int"
+            parameterType="int">
+        select
+        count(*)
+        from goods_like gl
+        where gl.member_no = (SELECT member_no FROM store where store_id = #{storeId});
+    </select>
+    <select id="countWinBidsByStoreId" resultType="int"
+            parameterType="int">
+        select count(*)
+        from bid b
+        where member_no = (SELECT member_no FROM store where store_id = #{storeId})
+        and b.status_no = '03';
+    </select>
+    <insert id="insertStoreReport" parameterType="com.pikcurchu.pikcur.dto.request.ReqStoreReportDto">
+        insert into store_report(store_id, member_no)
+        values(#{storeId}, #{memberNo});
+    </insert>
+    <insert id="insertStoreBlock" parameterType="com.pikcurchu.pikcur.dto.request.ReqStoreBlockDto">
+        insert into block(store_id, member_no)
+        values(#{storeId}, #{memberNo});
+    </insert>
+
+    <insert id="insertFollow" parameterType="map">
+        INSERT INTO
+        follow (
+            store_id
+        ,   member_no
+        )
+        VALUES (
+            #{storeId}
+        ,   #{memberNo}
+        )
+    </insert>
+
+    <delete id="deleteFollow">
+        DELETE FROM
+            follow
+        where
+            member_no = #{memberNo} and store_id = #{storeId}
+    </delete>
+</mapper>

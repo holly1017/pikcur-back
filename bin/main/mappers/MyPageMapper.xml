@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.MyPageMapper">
+
+    <select id="selectMyInfoById" parameterType="int" resultType="com.pikcurchu.pikcur.dto.response.MyPageInfoDto">
+        SELECT
+            name
+        ,   phone
+        ,   birth
+        ,   email
+        FROM
+            member
+        WHERE
+            member_no = #{memberNo}
+    </select>
+
+    <update id="updateMyInfo" parameterType="com.pikcurchu.pikcur.vo.Member">
+        UPDATE
+            member
+        SET
+            name = #{name}
+        ,   phone = #{phone}
+        ,   birth = #{birth}
+        ,   update_date = NOW()
+        WHERE
+            member_no = #{memberNo}
+    </update>
+
+    <select id="selectMyStore" parameterType="int" resultType="com.pikcurchu.pikcur.dto.response.ResMyStoreDto">
+        SELECT
+            store_id as storeId
+        ,   profile
+        ,   store_name as storeName
+        ,   store_info as storeInfo
+        from
+            store
+        where
+            member_no = #{memberNo}
+    </select>
+
+    <update id="updateMyStore" parameterType="com.pikcurchu.pikcur.vo.Store">
+        UPDATE
+            store
+        SET
+            store_name = #{storeName}
+        ,   store_info = #{storeInfo}
+        WHERE
+            store_id = #{storeId}
+    </update>
+    <update id="updateStoreProfilePath">
+        update store
+        set
+            profile = #{uploadedPath}
+        where
+            store_id = #{storeId}
+    </update>
+
+    <update id="updatePassword" parameterType="map">
+        UPDATE member
+        SET
+        password = #{password}
+        ,   update_date = NOW()
+        WHERE member_no = #{memberNo}
+    </update>
+</mapper>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pikcurchu.pikcur.mapper.AddressMapper">
+    <insert id="insertAddress">
+        INSERT INTO address (
+            member_no
+        ,   name
+        ,   phone
+        ,   address
+        ,   address_detail
+        ,   is_default
+        )
+        VALUES (
+            #{memberNo}
+        ,   #{req.name}
+        ,   #{req.phone}
+        ,   #{req.address}
+        ,   #{req.addressDetail}
+        ,   #{isDefault}
+        )
+    </insert>
+
+    <select id="selectAddressIsDefault" resultType="int">
+        SELECT
+            count(*)
+        FROM
+            address
+        WHERE
+            member_no = #{memberNo}
+        AND use_yn = 'Y'
+    </select>
+
+    <select id="selectAddressList" resultType="com.pikcurchu.pikcur.vo.Address">
+        select
+            address_id
+        ,   name
+        ,   phone
+        ,   address
+        ,   address_detail
+        ,   is_default
+        from
+            address
+        where
+            member_no = #{memberNo}
+        and use_yn = 'Y'
+    </select>
+
+    <update id="updateAddress">
+        UPDATE
+            address
+        SET
+            name = #{req.name}
+        ,   phone = #{req.phone}
+        ,   address = #{req.address}
+        ,   address_detail = #{req.addressDetail}
+        WHERE
+            member_no = #{memberNo}
+        and address_id = #{req.addressId}
+    </update>
+
+    <update id="deleteAddress">
+        UPDATE
+            address
+        SET
+            use_yn = 'N'
+        ,   is_default = 'N'
+        WHERE
+            member_no = #{memberNo}
+        AND address_id = #{addressId}
+    </update>
+
+    <update id="updateDefaultAddressAfterDelete">
+        UPDATE
+            address
+        SET
+            is_default = 'Y'
+        WHERE
+            address_id = (
+                SELECT
+                    address_id
+                FROM
+                    address
+                WHERE
+                    member_no = #{memberNo}
+                AND use_yn = 'Y'
+                ORDER BY address_id ASC
+                LIMIT 1
+            )
+    </update>
+
+    <update id="updateDefaultAddressN">
+        UPDATE
+            address
+        SET
+            is_default = 'N'
+        WHERE
+            member_no = #{memberNo}
+        and is_default = 'Y'
+    </update>
+
+    <update id="updateDefaultAddressY">
+        UPDATE
+            address
+        SET
+            is_default = 'Y'
+        WHERE
+            member_no = #{memberNo}
+            and address_id = #{addressId}
+    </update>
+</mapper>

@@ -15,11 +15,11 @@ public interface SearchMapper {
 
     List<ResSearchDto> selectSearchTop10();
 
-    void insertSearchHistory(String keyword, Integer memberNo);
+    int insertSearchHistory(String keyword, Integer memberNo);
 
     void deleteOldSearchHistory(Integer memberNo);
 
     int countSearchGoods(String keyword);
 
-    Integer deleteSearchHistory(Integer memberNo, Integer searchHistoryId);
+    int deleteSearchHistory(Integer memberNo, Integer searchHistoryId);
 }
