@@ -23,4 +23,10 @@ public interface BidMapper {
     List<Bid> findUnpaidWinners();
 
     Bid findNextBidder(Integer goodsId);
+
+    /**
+     * 동시성 제어: 입찰 처리 시 Row Lock을 획득하여 현재 최고가를 조회합니다.
+     * SELECT ... FOR UPDATE를 사용하여 동일 상품에 대한 동시 입찰을 순차적으로 처리합니다.
+     */
+    int selectMaxPriceForUpdate(Integer goodsId);
 }
