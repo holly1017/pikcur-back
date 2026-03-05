@@ -98,16 +98,6 @@ Controller (REST API)
 
 ---
 
-## 💡 주요 기술
-
-### 1. AOP 기반 알림 시스템
-비즈니스 로직에 알림 전송 코드가 섞이지 않도록 `@Alarm` 커스텀 어노테이션과 **Aspect**를 사용하여 알림 생성과 전송을 자동화했습니다.
-
-### 2. Multi-Layer Cloud-Native Infra
-단순 서버 배포가 아닌 S3(저장), CloudFront(CDN), RDS(DB), ElastiCache(Cache)를 적재적소에 배치하여 고가용성 아키텍처를 구현했습니다.
-
----
-
 ## 🔧 개선 예정 사항
 
 * **보안 강화**: Access Token 재발급을 위한 **Refesh Token** 로직 추가
