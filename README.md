@@ -57,7 +57,7 @@ Controller (REST API)
 | 구분           | 사용 기술                                      |
 | ------------ | ------------------------------------------ |
 | Language     | Java 17                                    |
-| Backend      | Spring Boot 3.5.6, Spring Security         |
+| Backend      | Spring Boot 3.5.6                          |
 | Persistence  | MyBatis, MariaDB (AWS RDS)                 |
 | Cache/Session | Redis (AWS ElastiCache with TLS)           |
 | Real-time    | WebSocket, STOMP                           |
@@ -95,16 +95,6 @@ Controller (REST API)
 * **ALARM/QUESTION/REVIEW**: 사용자 소통 및 알림 로그
 
 👉 **MyBatis를 통한 정교한 SQL 매핑 및 성능 최적화**
-
----
-
-## 💡 주요 기술
-
-### 1. AOP 기반 알림 시스템
-비즈니스 로직에 알림 전송 코드가 섞이지 않도록 `@Alarm` 커스텀 어노테이션과 **Aspect**를 사용하여 알림 생성과 전송을 자동화했습니다.
-
-### 2. Multi-Layer Cloud-Native Infra
-단순 서버 배포가 아닌 S3(저장), CloudFront(CDN), RDS(DB), ElastiCache(Cache)를 적재적소에 배치하여 고가용성 아키텍처를 구현했습니다.
 
 ---
 
