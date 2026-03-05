@@ -56,4 +56,16 @@
         ORDER BY bid_price DESC
         LIMIT 1
     </select>
+
+    <!--
+        동시성 제어: 입찰 처리 시 Row Lock을 획득하여 현재 최고가를 반환합니다.
+        FOR UPDATE를 사용하여 동일 트랜잭션이 끝날 때까지 다른 트랜잭션이 같은 row를 수정하지 못하게 합니다.
+        입찰 내역이 없는 경우(첫 입찰) 0을 반환합니다.
+    -->
+    <select id="selectMaxPriceForUpdate" resultType="int">
+        SELECT COALESCE(MAX(bid_price), 0)
+        FROM bid
+        WHERE goods_id = #{goodsId}
+        FOR UPDATE
+    </select>
 </mapper>
